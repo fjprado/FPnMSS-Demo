@@ -1,0 +1,8 @@
+openai
+python-dotenv
+streamlit
+PyPDF2
+azure-search-documents
+AzureOpenAI
+numpy
+operator
