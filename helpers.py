@@ -81,5 +81,5 @@ def summarize_text(json_list, user_query):
             frequency_penalty=0.5,
             presence_penalty = 0.5
         )
-    print(response)
+    
     return response.choices[0].text.strip("<|im_end|>")
