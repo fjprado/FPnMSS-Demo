@@ -26,9 +26,8 @@ if uploaded_file is not None:
     pdfReader = PyPDF2.PdfReader(pdf_file_like)
     
     # creating a page object
-    pageObj = pdfReader.pages[0]
-    
-    doc_text = pageObj.extract_text()   
+    pdfObj = pdfReader.pages[:10]    
+    doc_text = "".join(page.extract_text() for page in pdfObj)     
     
     # get current data from search_index by file_name   
     # search_result = search_index(uploaded_file.name)
@@ -53,5 +52,5 @@ if submit:
     # summarize response and show to user
     summary = summarize_text(res, input)    
     
-    st.subheader("the response is")
+    st.subheader("After reviewing your file, here is the result:")
     st.write(summary)

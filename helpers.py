@@ -63,8 +63,8 @@ def document_chunk(document, file_name):
 MAX_SECTION_LEN = 1000 # Set maximum token for context text
 
 def construct_prompt(most_relevant_docs, query) -> str:    
-    header = """Answer the question truthfully using context, if unsure, say "I don't know." and stop the conversation\n\nContext:\n"""
-    prompt = f'{header} {"".join(doc["content"] for doc in most_relevant_docs)}\n\n Question: {query}?'
+    header = f"""Answer the question truthfully using context, if unsure, say "I don't know." and stop the conversation\n\nContext:\n"""
+    prompt = f'{header} """{"".join(doc["content"] for doc in most_relevant_docs)}"""\n\n Question: {query}?'
     return prompt
 
 def summarize_text(json_list, user_query):
@@ -82,4 +82,4 @@ def summarize_text(json_list, user_query):
             presence_penalty = 0.5
         )
     print(response)
-    return response.choices[0].text
+    return response.choices[0].text.strip("<|im_end|>")
