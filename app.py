@@ -45,7 +45,10 @@ input = st.text_area("Question (Ask for something about your document):", key="i
 
 submit = st.button("Send :rocket:")
 
-if submit:   
+if submit and input=='':
+    st.toast("Give me a question!!!")
+
+if submit and input:   
     # search for similar documents embedding user input
     res = search_docs(combined_documents, input, top_n=4)
     

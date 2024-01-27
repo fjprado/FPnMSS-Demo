@@ -9,7 +9,7 @@ load_dotenv()
 
 client = AzureOpenAI(
   api_key = os.getenv("AZURE_OPENAI_API_KEY"),  
-  api_version = "2022-12-01",
+  api_version = "2023-07-01-preview",
   azure_endpoint = os.getenv("AZURE_OPENAI_API_BASE")
 )
 
@@ -62,24 +62,47 @@ def document_chunk(document, file_name):
 
 MAX_SECTION_LEN = 1000 # Set maximum token for context text
 
-def construct_prompt(most_relevant_docs, query) -> str:    
-    header = f"""Answer the question truthfully using context, if unsure, say "I don't know." and stop the conversation\n\nContext:\n"""
-    prompt = f'{header} """{"".join(doc["content"] for doc in most_relevant_docs)}"""\n\n Question: {query.strip("?")}?'
+def construct_prompt(most_relevant_docs, query): 
+    spacer = "\n- "   
+    prompt = [
+        {
+            "role": "system", 
+            "content": f"""You are a helpful assistant who only answers questions using the context below, uses an informal way to speak, and always gives practical examples. If there is no mention in the context provided, you always must say only 'This content is not in the knowledge base'.\nContext:\n- {(spacer.join(doc["content"] for doc in most_relevant_docs))}"""
+        },
+        {
+            "role": "user", 
+            "content": "Following the context, " + query.strip("?") + "?"
+        }
+    ]
     return prompt
 
 def summarize_text(json_list, user_query):
     prompt_i = construct_prompt(json_list, user_query) 
     print(prompt_i)
 
-    # Using a low temperature to limit the creativity in the response. 
-    response = client.completions.create(
-            model= "academy-35-turbo",
-            prompt = prompt_i,
-            temperature = 0.0,
-            max_tokens = 500,
-            top_p = 1.0,
-            frequency_penalty=0.5,
-            presence_penalty = 0.5
-        )
+    # # Completions
+    # response = client.completions.create(
+    #         model= "academy-35-turbo",
+    #         prompt = prompt_i,
+    #         temperature = 0.3,
+    #         max_tokens = 500,
+    #         top_p = 1.0,
+    #         frequency_penalty=0.5,
+    #         presence_penalty = 0.5
+    #     )
     
-    return response.choices[0].text.strip("<|im_end|>")
+    #return response.choices[0].text.strip("<|im_end|>")
+    
+    # # ChatCompletions
+    response = client.chat.completions.create(
+        model="academy-35-turbo",
+        messages=prompt_i,
+        temperature=0.3,
+        max_tokens=800,
+        top_p=0.95,
+        frequency_penalty=0,
+        presence_penalty=0,
+        stop=None
+    )
+    
+    return response.choices[0].message.content
